@@ -1,84 +1,219 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
-const slogans = [
-  "Turn chats into apps",
-  "Prompt. Ship. Repeat.",
-  "Build anything from a chat",
-  "Ideas → Apps, instantly",
-  "From zero to MVP in minutes",
-  "Your cofounder in the command line",
-  "Draft, iterate, deploy",
-  "Ship faster than you can type",
-  "Design in text, deliver in code",
-  "Dream it. Prompt it. Run it.",
-  "Chat-native app building",
-  "From prompt to product",
-  "One prompt, infinite apps",
-  "Stop scaffolding. Start shipping.",
-  "Prototype at the speed of thought",
-  "Make conversations executable"
-];
+export default function Calculator() {
+  const [display, setDisplay] = useState('0');
+  const [previousValue, setPreviousValue] = useState(null);
+  const [operation, setOperation] = useState(null);
+  const [waitingForOperand, setWaitingForOperand] = useState(false);
 
-export default function Landing() {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isVisible, setIsVisible] = useState(true);
+  const inputNumber = (num) => {
+    if (waitingForOperand) {
+      setDisplay(String(num));
+      setWaitingForOperand(false);
+    } else {
+      setDisplay(display === '0' ? String(num) : display + num);
+    }
+  };
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setIsVisible(false);
-      setTimeout(() => {
-        setCurrentIndex((prev) => (prev + 1) % slogans.length);
-        setIsVisible(true);
-      }, 400);
-    }, 2800);
+  const inputOperation = (nextOperation) => {
+    const inputValue = parseFloat(display);
 
-    return () => clearInterval(interval);
-  }, []);
+    if (previousValue === null) {
+      setPreviousValue(inputValue);
+    } else if (operation) {
+      const currentValue = previousValue || 0;
+      const newValue = calculate(currentValue, inputValue, operation);
+
+      setDisplay(String(newValue));
+      setPreviousValue(newValue);
+    }
+
+    setWaitingForOperand(true);
+    setOperation(nextOperation);
+  };
+
+  const calculate = (firstValue, secondValue, operation) => {
+    switch (operation) {
+      case '+':
+        return firstValue + secondValue;
+      case '-':
+        return firstValue - secondValue;
+      case '*':
+        return firstValue * secondValue;
+      case '/':
+        return firstValue / secondValue;
+      case '=':
+        return secondValue;
+      default:
+        return secondValue;
+    }
+  };
+
+  const performCalculation = () => {
+    const inputValue = parseFloat(display);
+
+    if (previousValue !== null && operation) {
+      const newValue = calculate(previousValue, inputValue, operation);
+      
+      setDisplay(String(newValue));
+      setPreviousValue(null);
+      setOperation(null);
+      setWaitingForOperand(true);
+    }
+  };
+
+  const clearAll = () => {
+    setDisplay('0');
+    setPreviousValue(null);
+    setOperation(null);
+    setWaitingForOperand(false);
+  };
+
+  // INTENTIONAL ERROR: Using undefined variable to cause build failure
+  const handleButtonClick = (value) => {
+    console.log(undefinedVariable); // This will cause an error
+    
+    if (value === 'C') {
+      clearAll();
+    } else if (value === '=') {
+      performCalculation();
+    } else if (['+', '-', '*', '/'].includes(value)) {
+      inputOperation(value);
+    } else {
+      inputNumber(value);
+    }
+  };
 
   return (
-    <div className="relative h-[100dvh] w-full overflow-hidden bg-black text-white">
-      {/* Enhanced animated aurora background layers */}
-      <div className="absolute inset-0 bg-aurora-layer-1" />
-      <div className="absolute inset-0 bg-aurora-layer-2" />
-      <div className="absolute inset-0 bg-aurora-layer-3" />
-      
-      {/* Floating particles overlay */}
-      <div className="absolute inset-0 bg-particles" />
-      
-      {/* Main content - centered */}
-      <main className="relative z-10 h-full flex flex-col items-center justify-center px-6">
-        <h1 className="text-center text-[clamp(28px,6vw,64px)] font-medium tracking-tight mb-4">
-          Turn Chats into Apps
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
+      <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-sm">
+        <h1 className="text-2xl font-bold text-center mb-6 text-gray-800">
+          Simple Calculator
         </h1>
         
-        {/* Rotating slogans */}
-        <div className="mt-4 h-8 md:h-10 overflow-hidden flex items-center justify-center">
-          <span
-            className={`inline-block text-center text-[clamp(18px,3vw,32px)] font-light transition-all duration-[400ms] ease-in-out ${
-              isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'
-            }`}
-          >
-            {slogans[currentIndex]}
-          </span>
+        {/* Display */}
+        <div className="bg-gray-900 text-white text-right text-2xl p-4 rounded mb-4 font-mono">
+          {display}
         </div>
-      </main>
-      
-      {/* Start Prompting arrow pointing left - bottom left */}
-      <div className="absolute left-6 md:left-8 bottom-[5%] z-20 flex items-center gap-3 arrow-point-left">
-        <div className="flex items-center gap-2 text-white/80 font-medium text-sm md:text-base">
-          <svg 
-            className="w-5 h-5 md:w-6 md:h-6 animate-bounce-horizontal" 
-            fill="none" 
-            viewBox="0 0 24 24" 
-            stroke="currentColor"
+
+        {/* Button Grid */}
+        <div className="grid grid-cols-4 gap-2">
+          {/* Row 1 */}
+          <button
+            onClick={() => handleButtonClick('C')}
+            className="col-span-2 bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-          <span>Start prompting</span>
+            Clear
+          </button>
+          <button
+            onClick={() => handleButtonClick('/')}
+            className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-4 rounded"
+          >
+            ÷
+          </button>
+          <button
+            onClick={() => handleButtonClick('*')}
+            className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-4 rounded"
+          >
+            ×
+          </button>
+
+          {/* Row 2 */}
+          <button
+            onClick={() => handleButtonClick('7')}
+            className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-3 px-4 rounded"
+          >
+            7
+          </button>
+          <button
+            onClick={() => handleButtonClick('8')}
+            className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-3 px-4 rounded"
+          >
+            8
+          </button>
+          <button
+            onClick={() => handleButtonClick('9')}
+            className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-3 px-4 rounded"
+          >
+            9
+          </button>
+          <button
+            onClick={() => handleButtonClick('-')}
+            className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-4 rounded"
+          >
+            −
+          </button>
+
+          {/* Row 3 */}
+          <button
+            onClick={() => handleButtonClick('4')}
+            className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-3 px-4 rounded"
+          >
+            4
+          </button>
+          <button
+            onClick={() => handleButtonClick('5')}
+            className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-3 px-4 rounded"
+          >
+            5
+          </button>
+          <button
+            onClick={() => handleButtonClick('6')}
+            className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-3 px-4 rounded"
+          >
+            6
+          </button>
+          <button
+            onClick={() => handleButtonClick('+')}
+            className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-4 rounded"
+          >
+            +
+          </button>
+
+          {/* Row 4 */}
+          <button
+            onClick={() => handleButtonClick('1')}
+            className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-3 px-4 rounded"
+          >
+            1
+          </button>
+          <button
+            onClick={() => handleButtonClick('2')}
+            className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-3 px-4 rounded"
+          >
+            2
+          </button>
+          <button
+            onClick={() => handleButtonClick('3')}
+            className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-3 px-4 rounded"
+          >
+            3
+          </button>
+          <button
+            onClick={() => handleButtonClick('=')}
+            className="row-span-2 bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded"
+          >
+            =
+          </button>
+
+          {/* Row 5 */}
+          <button
+            onClick={() => handleButtonClick('0')}
+            className="col-span-2 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-3 px-4 rounded"
+          >
+            0
+          </button>
+          <button
+            onClick={() => handleButtonClick('.')}
+            className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-3 px-4 rounded"
+          >
+            .
+          </button>
         </div>
       </div>
     </div>
   );
 }
+
